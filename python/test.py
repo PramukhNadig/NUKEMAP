@@ -39,7 +39,7 @@ ax = fig.add_subplot(111)
 ax.set_xlim(-10,10)
 ax.set_ylim(-10,10)
 
-patch = patches.Circle((0,0), 1)
+patch = plt.Circle((0,0), 1)
 
 def init():
     ax.add_patch(patch)
