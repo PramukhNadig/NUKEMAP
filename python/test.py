@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib import animation
 import tkinter as tk
+from IPython import display
 #from bokeh.plotting import figure, output_file, show, curdoc
 
 # # canvas
@@ -46,12 +47,19 @@ def init():
     return patch,
 
 def animate(i):
-    patch.set_width(1.2)
-    patch.set_height(1.2)
-    patch.set
+    x, y = patch.center
+    x = i+1
+    y = i+1
+    patch.center = (x,y)
     return patch,
 
-anim = animation.FuncAnimation(fig, animate, init_func=init, frames=len(x), interval=5, blit=True)
+anim = animation.FuncAnimation(
+    fig, 
+    animate, 
+    init_func=init,  
+    interval=40, 
+    blit=True
+)
 
-
+anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=30))
 plt.show()
