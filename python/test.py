@@ -33,7 +33,10 @@ def init():
 
 def animate(i):
     x, y = patch.center
-    currRad = patch.radius
+    currRad = patch.radius  # Affects radius
+
+    if i % 20 == 0:
+        ax.add_patch(plt.Circle((x, y), currRad))
 
     x = i+1
     y = i+1
@@ -46,9 +49,9 @@ anim = animation.FuncAnimation(
     fig,
     animate,
     init_func=init,
-    interval=100,
-    blit=True
+    interval=50,
+    blit=True,
 )
 
-anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=120))
+anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=500))
 plt.show()
