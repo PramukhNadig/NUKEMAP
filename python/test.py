@@ -1,49 +1,51 @@
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
-# # movement vector
+'''
+Basic model parameters
+    - circular cloud
+    - constant movement
+    - constant growth
+    - instant fall out -> at clouds location
+    - account for time somehow
+'''
 
-# # circular cloud
+# parameters
+radii_growth = 0.05             # how fast the cloud grows
+movement_speed = 1              # speed of cloud
+movement_direction = [1, 1]     # x and y direction on 2d graph
+fallout_interval = 20           # frequency of fallout readings
 
-# # constant movement, constant growth
-
-# # instant fallout to ground -> at clouds location
-
-# # time needs to be accounted for
-
-x = [0, 1, 2]
-y = [0, 1, 2]
-growth = 0.05
-
+# initalize the figure
 fig = plt.figure()
-plt.axis("equal")
-plt.grid()
-
 ax = fig.add_subplot(111)
-ax.set_xlim(-100, 100)
-ax.set_ylim(-100, 100)
+plt.xlim([-100, 100])
+plt.ylim([-100, 100])
 
+# the cloud
 patch = plt.Circle((0, 0), 1)
-
 
 def init():
     ax.add_patch(patch)
     return patch,
 
-
 def animate(i):
     x, y = patch.center
     currRad = patch.radius  # Affects radius
 
-    if i % 20 == 0:
-        ax.add_patch(plt.Circle((x, y), currRad))
+    # fallout readings
+    if i % fallout_interval == 0:
+        ax.add_patch(plt.Circle((x, y), currRad, color='black'))
 
-    x = i+1
-    y = i+1
+    # cloud movement
+    x = i+(movement_speed * movement_direction[0])
+    y = i+(movement_speed * movement_direction[0])
     patch.center = (x, y)
-    patch.set_radius(currRad + growth)
-    return patch,
 
+    # cloud growth 
+    patch.set_radius(currRad + radii_growth)
+
+    return patch,
 
 anim = animation.FuncAnimation(
     fig,
