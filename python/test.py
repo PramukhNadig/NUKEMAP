@@ -8,13 +8,25 @@ Basic model parameters
     - constant growth
     - instant fall out -> at clouds location
     - account for time somehow
+
+V2 model parameters
+    - miller based cloud shape/growth
+    - fallout is a gradient
+    - cloud fallout stops at some point
 '''
 
 # parameters
-radii_growth = 0.05             # how fast the cloud grows
-movement_speed = 1              # speed of cloud
+radii_growth = 0.50             # how fast the cloud grows
+movement_speed = 0.02           # speed of cloud
 movement_direction = [1, 1]     # x and y direction on 2d graph
-fallout_interval = 20           # frequency of fallout readings
+fallout_interval = 2            # frequency of fallout readings
+fallout_opacity = 0.1           # opacity of fallout patches
+
+# for displayed animations, duration is 0.001 * frames * interval
+fallout_duration = 3            # how many seconds fallout will last
+fps = 10                        # how much of a gamer you are
+frames = 100                    # total frames of the animation
+fallout_timer = fallout_duration * fps 
 
 # initalize the figure
 fig = plt.figure()
@@ -34,8 +46,14 @@ def animate(i):
     currRad = patch.radius  # Affects radius
 
     # fallout readings
-    if i % fallout_interval == 0:
-        ax.add_patch(plt.Circle((x, y), currRad, color='black'))
+    if i % fallout_interval == 0 and i < fallout_timer:
+        ax.add_patch(
+            plt.Circle((x, y), 
+                currRad, 
+                color='black', 
+                alpha=fallout_opacity
+            )
+        )    
 
     # cloud movement
     x = i+(movement_speed * movement_direction[0])
@@ -50,10 +68,12 @@ def animate(i):
 anim = animation.FuncAnimation(
     fig,
     animate,
+    frames = frames,
     init_func=init,
-    interval=50,
+    interval=1000,
     blit=True,
 )
 
-anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=500))
+anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=fps))
+fig.savefig('output.png')
 plt.show()
