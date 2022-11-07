@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from matplotlib import animation
+import numpy as np
 
 '''
 Basic model parameters
@@ -28,52 +28,70 @@ fps = 10                        # how much of a gamer you are
 frames = 100                    # total frames of the animation
 fallout_timer = fallout_duration * fps 
 
-# initalize the figure
-fig = plt.figure()
-ax = fig.add_subplot(111)
-plt.xlim([-100, 100])
-plt.ylim([-100, 100])
+# # initalize the figure
+# fig = plt.figure()
+# ax = fig.add_subplot(111)
+# plt.xlim([-100, 100])
+# plt.ylim([-100, 100])
 
-# the cloud
-patch = plt.Circle((0, 0), 1)
+# # the cloud
+# patch = plt.Circle((0, 0), 1)
 
-def init():
-    ax.add_patch(patch)
-    return patch,
+# def init():
+#     ax.add_patch(patch)
+#     return patch,
 
-def animate(i):
-    x, y = patch.center
-    currRad = patch.radius  # Affects radius
+# def animate(i):
+#     x, y = patch.center
+#     currRad = patch.radius  # Affects radius
 
-    # fallout readings
-    if i % fallout_interval == 0 and i < fallout_timer:
-        ax.add_patch(
-            plt.Circle((x, y), 
-                currRad, 
-                color='black', 
-                alpha=fallout_opacity
-            )
-        )    
+#     # fallout readings
+#     if i % fallout_interval == 0 and i < fallout_timer:
+#         ax.add_patch(
+#             plt.Circle((x, y), 
+#                 currRad, 
+#                 color='black', 
+#                 alpha=fallout_opacity
+#             )
+#         )    
 
-    # cloud movement
-    x = i+(movement_speed * movement_direction[0])
-    y = i+(movement_speed * movement_direction[0])
-    patch.center = (x, y)
+#     # cloud movement
+#     x = i+(movement_speed * movement_direction[0])
+#     y = i+(movement_speed * movement_direction[0])
+#     patch.center = (x, y)
 
-    # cloud growth 
-    patch.set_radius(currRad + radii_growth)
+#     # cloud growth 
+#     patch.set_radius(currRad + radii_growth)
 
-    return patch,
+#     return patch,
 
-anim = animation.FuncAnimation(
-    fig,
-    animate,
-    frames = frames,
-    init_func=init,
-    interval=1000,
-    blit=True,
-)
+# anim = animation.FuncAnimation(
+#     fig,
+#     animate,
+#     frames = frames,
+#     init_func=init,
+#     interval=1000,
+#     blit=True,
+# )
 
-anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=fps))
-fig.savefig('output.png')
+# anim.save('output.gif', dpi=100, writer=animation.PillowWriter(fps=fps))
+# fig.savefig('output.png')
+# plt.show()
+
+# def generate_circle(radius):
+#     diameter = 2*radius + 1
+#     rx, ry = diameter/2, diameter/2
+#     x,y = np.indices((diameter,diameter))
+#     return (np.abs(np.hypot(rx - x, ry - y) - radius) < 0.5).astype(int)
+
+# #data = np.random.random((100, 120))
+
+# data = generate_circle(50)
+
+xx, yy = np.mgrid[:200, :200]
+
+ellipse = (xx-100) ** 2 + (yy-100)**2
+
+plt.imshow(ellipse, cmap="gray", interpolation="nearest")
+plt.savefig('output_map.png')
 plt.show()
