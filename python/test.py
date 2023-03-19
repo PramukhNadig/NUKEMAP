@@ -5,18 +5,26 @@ import numpy as np
 from collections import defaultdict
 from matplotlib.collections import PatchCollection
 
-# parameters
+############################ Parameters #######################################
+# cloud parameters
 radii_growth = 0.50                 # how fast the cloud grows
 movement_speed = 0.02               # speed of cloud
 movement_direction = [1, 1]         # x and y direction on 2d graph
-alpha_offset = 1.2                  # transparency offset
-color_norm = 0.9
+
+# color parameters
+limit_black = 0.6                   # max fallout value (limits darkness)
+limit_white = 0.9                   # minimum fallout value (limits whiteness)
+blend_weight = 0.1                  # how much weight is given to new overlapped pixels
+
+# fallout parameters
 fallout_interval = 10               # frequency of fallout readings
 fallout_opacity = 0.1               # opacity of fallout patches
 fallout_duration = 10               # how many seconds fallout will last
-fps = 10                            # how much of a gamer you are
-frames = 100                        # total frames of the animation
-fallout_timer = fallout_duration * fps 
+
+# animation parameters
+fps = 10                            # how much of a gamer you areobjects
+frames = 100                        # total frames of the animation 
+###############################################################################
 
 # # initalize the figure
 fig = plt.figure()
@@ -26,42 +34,37 @@ plt.ylim([-100, 100])
 
 # the cloud
 patch = plt.Circle((0, 0), 1)
+fallout_timer = fallout_duration * fps
+fallout_count = math.ceil(fallout_timer/fallout_interval) # number of fallout plots
 
-# dictionary storing all patches
-patch_dict = {}
-
-patch_storage = []
-fc_storage = []
+patch_dict = {}         # maps coordinates to patch objects
+patch_storage = []      # stores patch objects
+fc_storage = []         # stores pixel colors
 
 def init():
     ax.add_patch(patch)
     return patch,
 
+def create_patch(x, y, color):
+    return patches.Rectangle(
+        (x, y),
+        width = 1,
+        height = 1,
+        color = str(max(limit_black, color)),
+        edgecolor = None,
+        alpha = 1
+    )
+
+def modify_patch():
+    pass
+
 def animate(i):
     x, y = patch.center
     r = patch.radius  
 
-    # offset for computing distanced
-    offset_x = x - int(x)
-    offset_y = y - int(y)
-    offset_rad = r - int(r)
-
-    drawings = math.ceil(fallout_timer/fallout_interval)
-
-
-
-
-    # fallout readings
     if i % fallout_interval == 0 and i < fallout_timer:
         instance = int(i/fallout_interval) + 1
-        print(f"Drawing fallout instance {instance} of {drawings}")
-        alpha_offset = 0.3 * (0.5 ** (instance-1))
-
-        # for loop can only iterate through integers
-        # so to compute distance, need to store decimal offset
-        # offset_x = x - int(x)
-        # offset_y = y - int(y)
-        # offset_rad = r - int(r)
+        print(f"Drawing fallout instance {instance} of {fallout_count}")
 
         dist_dict = defaultdict(lambda: [])
         pixel_dict = defaultdict(lambda: [])
@@ -82,50 +85,29 @@ def animate(i):
                     dist_dict[color].append(dist)
                     pixel_dict[color].append((row, col))
 
-                    # how to do transparency
-                    # well black is 0, white is 1
-                    # white should be less transparent
-                    
-
-                    # transparency could also be adjusted based on the color too
-                    # if the color is near white, don't bother drawing the pixel
-                    if color <= color_norm: 
-                        
+                    if color <= limit_white: 
                         if f"{row},{col}" not in patch_dict: 
-                          
-                           new_patch = patches.Rectangle(
-                                (row, col),
-                                1,
-                                1,
-                                color=str(max(0.6, color)),
-                                edgecolor = None,
-                                alpha=1
-
-                            )
+                           new_patch = create_patch(row, col, color)
                            patch_collection.append(new_patch)
-                           fc.append(str(max(0.6, color)))
-   
+                           fc.append(str(max(limit_black, color)))
                            patch_dict[f"{row},{col}"] = (instance -1, len(patch_collection)-1)
+
                         else:
                             # compute new color
                              a, b = patch_dict[f"{row},{col}"]
                              old_color = float(fc_storage[a][b])
 
                              # how the blending works
-                             diff = 1 - 0.6
-                             weight = 0.1
-                             new_color = str(max(0,old_color - color*weight))
+                             new_color = str(max(0,old_color - color*blend_weight))
                              fc_storage[a][b] = new_color
                              curr_pc = patch_storage[a]
                              curr_pc.set_facecolors(fc_storage[a])
 
-
+        # update everything 
         pc = PatchCollection(patch_collection, facecolor=fc)
         ax.add_collection(pc)
         patch_storage.append(pc)
         fc_storage.append(fc)
-
-
 
     # cloud movement
     x = i+(movement_speed * movement_direction[0])
@@ -149,14 +131,3 @@ anim = animation.FuncAnimation(
 anim.save('output.gif', dpi=500, writer=animation.PillowWriter(fps=fps))
 fig.savefig('outpuuuut.png')
 plt.show()
-
-
-'''
-you can access patches through the patch collection after they're drawn
-all the drawn patches are stored in patch collections
-but each patch collection is a circle
-meaning we need to figure out the right patch_collection and then the index within
-the dictionary can store the index locations
-dictionary key is x,y coordinate -> index of the 2d array where it is stored
-can retrieve the color and then update it!
-'''
