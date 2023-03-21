@@ -12,9 +12,9 @@ movement_speed = 0.02               # speed of cloud
 movement_direction = [1, 1]         # x and y direction on 2d graph
 
 # color parameters
-limit_black = 0.6                   # max fallout value (limits darkness)
-limit_white = 0.9                   # minimum fallout value (limits whiteness)
-blend_weight = 0.1                  # how much weight is given to new overlapped pixels
+limit_black = 0.2                   # max fallout value (limits darkness)
+limit_white = 0.8                   # minimum fallout value (limits whiteness)
+blend_weight = 0.2                  # how much weight is given to new overlapped pixels
 
 # fallout parameters
 fallout_interval = 10               # frequency of fallout readings
@@ -39,7 +39,7 @@ fallout_count = math.ceil(fallout_timer/fallout_interval) # number of fallout pl
 
 patch_dict = {}         # maps coordinates to patch objects
 patch_storage = []      # stores patch objects
-fc_storage = []         # stores pixel colors
+fc_storage = []         # stores pixel colors (face colors)
 
 def init():
     ax.add_patch(patch)
@@ -55,8 +55,11 @@ def create_patch(x, y, color):
         alpha = 1
     )
 
-def modify_patch():
-    pass
+# how transparency is handled
+# so this can and will change
+def blend_function(old_color, new_color):
+    return max(0, old_color - new_color*blend_weight)
+
 
 def animate(i):
     x, y = patch.center
@@ -66,8 +69,6 @@ def animate(i):
         instance = int(i/fallout_interval) + 1
         print(f"Drawing fallout instance {instance} of {fallout_count}")
 
-        dist_dict = defaultdict(lambda: [])
-        pixel_dict = defaultdict(lambda: [])
         patch_collection = []
         fc = []
 
@@ -82,13 +83,9 @@ def animate(i):
                 if dist <= r:
                     color = round(dist / r, 2) # color is computed based on distance from origin
 
-                    dist_dict[color].append(dist)
-                    pixel_dict[color].append((row, col))
-
                     if color <= limit_white: 
                         if f"{row},{col}" not in patch_dict: 
-                           new_patch = create_patch(row, col, color)
-                           patch_collection.append(new_patch)
+                           patch_collection.append(create_patch(row, col, color))
                            fc.append(str(max(limit_black, color)))
                            patch_dict[f"{row},{col}"] = (instance -1, len(patch_collection)-1)
 
@@ -98,10 +95,10 @@ def animate(i):
                              old_color = float(fc_storage[a][b])
 
                              # how the blending works
-                             new_color = str(max(0,old_color - color*blend_weight))
+                             new_color = str(blend_function(old_color, color))
+
                              fc_storage[a][b] = new_color
-                             curr_pc = patch_storage[a]
-                             curr_pc.set_facecolors(fc_storage[a])
+                             patch_storage[a].set_facecolors(fc_storage[a])
 
         # update everything 
         pc = PatchCollection(patch_collection, facecolor=fc)
