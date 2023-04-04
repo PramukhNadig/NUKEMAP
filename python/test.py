@@ -1,8 +1,9 @@
 import math
-from matplotlib import animation, patches
+from collections import defaultdict
+
 import matplotlib.pyplot as plt
 import numpy as np
-from collections import defaultdict
+from matplotlib import animation, patches
 from matplotlib.collections import PatchCollection
 
 ############################ Parameters #######################################
@@ -31,6 +32,8 @@ fig = plt.figure()
 ax = fig.add_subplot(111)
 plt.xlim([-100, 100])
 plt.ylim([-100, 100])
+plt.xticks([])
+plt.yticks([])
 
 # the cloud
 patch = plt.Circle((0, 0), 1)
